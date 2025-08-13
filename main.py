@@ -2,26 +2,18 @@ import speech_recognition as sr
 import webbrowser
 import pyttsx3
 import musiclibrary
-import requests
-from openai import OpenAI
 import os
+import requests
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
-
 recognizer = sr.Recognizer()
 engine=pyttsx3.init()
 apiKey = os.getenv("NEWS_API_KEY")
-openAi_apiKey = os.getenv("OPEN_AI_API_KEY")
-
-def speak(text):
-    engine = pyttsx3.init(driverName='sapi5')
-    engine.say(text)
-    engine.runAndWait()
+client=OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
 
 def aiProcess(command):
-    client=OpenAI("openAi_apiKey")
-
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -31,6 +23,10 @@ def aiProcess(command):
     )
     return completion.choices[0].message.content
     
+def speak(text):
+    engine = pyttsx3.init(driverName='sapi5')
+    engine.say(text)
+    engine.runAndWait()
 
 def processCommand(c):
     if("open google" in c.lower()):
@@ -92,7 +88,7 @@ if __name__=="__main__":
         try:
             with sr.Microphone() as source:
                 print("Listening...")
-                audio = recognizer.listen(source,timeout=2,phrase_time_limit=1)
+                audio = recognizer.listen(source,timeout=10,phrase_time_limit=5)
 
             WIEK_WORD= recognizer.recognize_google(audio)    
             if (WIEK_WORD.lower() == "jarvis"):
@@ -106,3 +102,4 @@ if __name__=="__main__":
 
         except Exception as e:
             print("error; {0}".format(e))       
+
