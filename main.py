@@ -6,27 +6,65 @@ import os
 import requests
 from dotenv import load_dotenv
 from openai import OpenAI
+from gtts import gTTS
+import pygame
 
 load_dotenv()
 recognizer = sr.Recognizer()
 engine=pyttsx3.init()
 apiKey = os.getenv("NEWS_API_KEY")
-client=OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+# client=OpenAI(api_key = os.getenv("OPENAI_API_KEY"))
+
+
+client = OpenAI(
+    api_key=os.getenv("GEMINI_API_KEY"),
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+)
 
 def aiProcess(command):
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gemini-2.5-flash",
         messages=[
-            {"role": "system", "content": "You are a virtual assistant named jarvis skilled in general tasks like Alexa and Google Cloud."},
+            {"role": "system", "content": "You are a short-response virtual assistant named Jarvis."},
             {"role": "user", "content": command}
         ]
     )
     return completion.choices[0].message.content
+
+# def aiProcess(command):
+#     completion = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         messages=[
+#             {"role": "system", "content": "You are a virtual assistant named jarvis skilled in general tasks like Alexa and Google Cloud,give short responeces"},
+#             {"role": "user", "content": command}
+#         ]
+#     )
+#     return completion.choices[0].message.content
     
-def speak(text):
+def speak_OLD(text):
     engine = pyttsx3.init(driverName='sapi5')
     engine.say(text)
     engine.runAndWait()
+
+def speak(text):
+    tts = gTTS(text)
+    tts.save('text.mp3')
+    # Initialize pygame mixer
+
+    pygame.mixer.init()
+
+    # Load your MP3 file
+    pygame.mixer.music.load('text.mp3')
+    # Play the music (loops=0 means play once, -1 means loop forever)
+    pygame.mixer.music.play()
+
+    # Keep the program running until the music stops
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10) 
+
+    pygame.mixer.music.unload()
+    os.remove('text.mp3')  # Clean up the temporary file    
+
 
 def processCommand(c):
     if("open google" in c.lower()):
